@@ -1,0 +1,11 @@
+{
+  ":configurator:resource-version": 1,
+  
+  "GitConfig~udp": 
+  {
+    "repo": "git@github.com:de-jena/upd-models.git",
+    "branch": "main",
+    "privateKey": "$[env:SSH_PRIVATE_KEY;default=$[prop:SSH_PRIVATE_KEY;default=]]",
+    "privateKeyPassphrase":"$[env:SSH_PRIVATE_KEY_PWD;default=$[prop:SSH_PRIVATE_KEY_PWD;default=]]"
+	}
+}
