@@ -54,6 +54,20 @@ import com.jcraft.jsch.Session;
 
 @Component(service = GitService.class, configurationPid = "GitConfig", configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
 public class GitService {
+	private final class GitSshSessionFactory extends JschConfigSessionFactory {
+
+		@Override
+		protected void configure(OpenSshConfig.Host host, Session session) {
+		}
+
+		@Override
+		protected JSch createDefaultJSch(FS fs) throws JSchException {
+			JSch defaultJSch = super.createDefaultJSch(fs);
+			defaultJSch.addIdentity(config.privateKey(), config.privateKeyPassphrase());
+			return defaultJSch;
+		}
+	}
+
 	private static final Logger logger = System.getLogger(GitService.class.getName());
 	private GitConfig config;
 	private Repository repo;
@@ -63,25 +77,13 @@ public class GitService {
 	public void activate(GitConfig config) throws IOException, GitAPIException {
 		logger.log(Level.INFO, "Start git service with repo {0}", config.repo());
 		this.config = config;
-		SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
-			@Override
-			protected void configure(OpenSshConfig.Host host, Session session) {
-			}
-
-			@Override
-			protected JSch createDefaultJSch(FS fs) throws JSchException {
-				JSch defaultJSch = super.createDefaultJSch(fs);
-				defaultJSch.addIdentity(config.privateKey(), config.privateKeyPassphrase());
-				return defaultJSch;
-			}
-		};
-
 		DfsRepositoryDescription repoDesc = new DfsRepositoryDescription();
 		if (isRemote(config.repo())) {
 			repo = new InMemoryRepository.Builder() //
 					.setInitialBranch(config.branch()).setRepositoryDescription(repoDesc) //
 					.setFS(FS.detect()).build();
 			git = new Git(repo);
+			SshSessionFactory sshSessionFactory = new GitSshSessionFactory();
 			FetchCommand fetchCmd = git.fetch();
 			fetchCmd.setRemote(config.repo());
 			fetchCmd.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*"));
@@ -109,32 +111,12 @@ public class GitService {
 
 	public void loadFile(String file, OutputStream out) throws RevisionSyntaxException, IOException {
 		String branch = config.branch();
-
-//		DirCache dirCache = DirCache.read(repo);
 		ObjectId lastCommitId = repo.resolve("refs/heads/" + branch);
 		try (RevWalk revWalk = new RevWalk(repo); TreeWalk treeWalk = new TreeWalk(repo)) {
 			RevCommit commit = revWalk.parseCommit(lastCommitId);
 			RevTree tree = commit.getTree();
 			treeWalk.addTree(tree);
 			treeWalk.setRecursive(true);
-//			TreeFilter filter = new TreeFilter() {
-//				
-//				@Override
-//				public boolean shouldBeRecursive() {
-//					return true;
-//				}
-//				
-//				@Override
-//				public boolean include(TreeWalk walker) throws MissingObjectException, IncorrectObjectTypeException, IOException {
-//					return walker.;
-//				}
-//				
-//				@Override
-//				public TreeFilter clone() {
-//					return null;
-//				}
-//			};
-//			treeWalk.setFilter(filter );
 			treeWalk.setFilter(PathFilter.create(file));
 			if (!treeWalk.next()) {
 				return;

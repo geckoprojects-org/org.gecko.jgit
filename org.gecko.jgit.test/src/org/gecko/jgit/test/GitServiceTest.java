@@ -15,7 +15,10 @@ package org.gecko.jgit.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -43,11 +46,15 @@ import org.osgi.test.junit5.service.ServiceExtension;
 		@Property(key = "branch", value = "main") })
 public class GitServiceTest {
 
+	/** FOO_BAR */
+	private static final String FILE_CONTENT = "fooBar";
+
 	@BeforeEach
 	public void before(@InjectService(cardinality = 0) ServiceAware<GitRepositoryService> repoAware)
-			throws InterruptedException, GitAPIException {
+			throws InterruptedException, GitAPIException, IOException {
 		GitRepositoryService repo = repoAware.waitForService(5000);
 		assertThat(repo).isNotNull();
+		Files.writeString(Paths.get("testRepo/test"), FILE_CONTENT);
 		repo.addFilePattern("test");
 		repo.commit("Hans Wurst", "hw@example.com", "add test");
 	}
@@ -56,13 +63,8 @@ public class GitServiceTest {
 	@WithFactoryConfiguration(factoryPid = "GitConfig", location = "?", name = "git", properties = {
 			@Property(key = "repo", value = "testRepo"), //
 			@Property(key = "branch", value = "main") })
-//	@WithFactoryConfiguration(factoryPid = "GitConfig", location = "?", name = "git", properties = {
-//			@Property(key = "repo", value = "git@github.com:de-jena/upd-models.git"), //
-//			@Property(key = "branch", value = "main"), //
-//			@Property(key = "privateKey", value = "/home/grune/.ssh/id_ecdsa_test_pw"), //
-//			@Property(key = "privateKeyPassphrase", value = "dimdim") })
-	public void test(@InjectService(cardinality = 0) ServiceAware<GitService> gsAware)
-			throws InterruptedException, GitAPIException, IOException {
+	public void testLog(@InjectService(cardinality = 0) ServiceAware<GitService> gsAware)
+			throws InterruptedException, GitAPIException {
 		GitService service = gsAware.waitForService(5000l);
 		List<String> branches = service.getBranches();
 		assertThat(branches).hasSize(1);
@@ -73,6 +75,22 @@ public class GitServiceTest {
 					.extracting(PersonIdent::getName, PersonIdent::getEmailAddress)
 					.containsExactly("Hans Wurst", "hw@example.com");
 		}
+	}
+
+	@Test
+	@WithFactoryConfiguration(factoryPid = "GitConfig", location = "?", name = "git", properties = {
+			@Property(key = "repo", value = "testRepo"), //
+			@Property(key = "branch", value = "main") })
+	public void testLoad(@InjectService(cardinality = 0) ServiceAware<GitService> gsAware)
+			throws InterruptedException, IOException {
+		GitService service = gsAware.waitForService(5000l);
+		List<String> branches = service.getBranches();
+		assertThat(branches).hasSize(1);
+
+		ByteArrayOutputStream o = new ByteArrayOutputStream();
+		service.loadFile("test", o);
+		String content = new String(o.toByteArray());
+		assertThat(content).isEqualTo(FILE_CONTENT);
 	}
 
 }
