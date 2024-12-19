@@ -13,7 +13,7 @@ pluginManagement {
     }
     mavenCentral()
     gradlePluginPortal()
-    rootProject.name="org.eclipse.fennec.git"
+    rootProject.name="org.gecko.jgit"
   }
 }
 plugins {

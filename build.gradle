@@ -27,8 +27,8 @@ subprojects {
 // Sonar setup
 sonarqube {
   properties {
-    property "sonar.projectName", "org.eclipse.fennec.git"
-    property "sonar.projectKey", "geckoprojects-org_org.eclipse.fennec.git"
+    property "sonar.projectName", "org.gecko.jgit"
+    property "sonar.projectKey", "geckoprojects-org_org.gecko.jgit"
     property "sonar.organization", "geckoprojects-org"
     property "sonar.host.url", "https://sonarcloud.io"
     property "sonar.coverage.jacoco.xmlReportPaths", "${rootDir}/build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml"

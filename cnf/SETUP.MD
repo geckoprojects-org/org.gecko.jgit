@@ -2,11 +2,11 @@
 
 ## Basics
 
-The Maven group-id is defaulted to **org.eclipse.fennec.git** in *cnf/build.bnd* using the bnd **-groupid** instruction.
+The Maven group-id is defaulted to **org.gecko.jgit** in *cnf/build.bnd* using the bnd **-groupid** instruction.
 
 ## Github - Create Project
 - Create a empty [GitHub repository](https://github.com/organizations/geckoprojects-org/repositories/new)
-  - Name: `org.eclipse.fennec.git`
+  - Name: `org.gecko.jgit`
   - DO NOT!!! use any DEFAULTS like README or license
   
 ## Sonarcloud
@@ -14,11 +14,11 @@ The Maven group-id is defaulted to **org.eclipse.fennec.git** in *cnf/build.bnd*
   - do the [Sonar Configuration](https://sonarcloud.io/organizations/geckoprojects-org/projects)
   - press `+`_(upper right)_
   - Analyze new project
-  - check `org.eclipse.fennec.git` and `SetUp`
+  - check `org.gecko.jgit` and `SetUp`
   - Select `with a GitHub Action`
   - Copy the `SONAR_TOKEN` to notepad
   - NOT!!!! follow the description .about `github/workflows/build.yml`. _this still [exists](../blob/main/.github/workflows/sonar.yml) in this template._
-  - GitHub -> Project-Settings -> Secrets -> [New Repository Secrets](Link: https://github.com/geckoprojects-org/org.eclipse.fennec.git/settings/secrets/actions/new)
+  - GitHub -> Project-Settings -> Secrets -> [New Repository Secrets](Link: https://github.com/geckoprojects-org/org.gecko.jgit/settings/secrets/actions/new)
     - add `SONAR_TOKEN`
 
 ## Gradle init
@@ -37,7 +37,7 @@ git init
 git add .
 git commit -m "initial commit"
 git branch -M main
-git remote add origin git@github.com:geckoprojects-org/org.eclipse.fennec.git.git
+git remote add origin git@github.com:geckoprojects-org/org.gecko.jgit.git
 git push -u origin main
 git checkout -b snapshot
 git push --set-upstream origin snapshot
@@ -45,7 +45,7 @@ git checkout -b "initial"
 ```
 
 ## GitHub Branch-Protection
-- Project -> Settings  -> Branches [add rule](https://github.com/geckoprojects-org/org.eclipse.fennec.git/settings/branch_protection_rules/new)
+- Project -> Settings  -> Branches [add rule](https://github.com/geckoprojects-org/org.gecko.jgit/settings/branch_protection_rules/new)
   - Branch name pattern: `[ms][an][ia][np]*` *(ugly but works, protects 'main*' and 'snap*' by charachter )*
   - Require pull request reviews before merging
     - 1 reviewer
@@ -60,8 +60,8 @@ git checkout -b "initial"
 ## Jenkins
 - wait up to 15 minutes for the auto-import
 - [Jenkins Mainpage](https://devel.data-in-motion.biz/jenkins/)
-- [Jenkins GitHub-Group](https://devel.data-in-motion.biz/jenkins/job/GH/) should show `org.eclipse.fennec.git`
-- [Jenkins org.eclipse.fennec.git branches](https://devel.data-in-motion.biz/jenkins/job/GH/job/org.eclipse.fennec.git/)
+- [Jenkins GitHub-Group](https://devel.data-in-motion.biz/jenkins/job/GH/) should show `org.gecko.jgit`
+- [Jenkins org.gecko.jgit branches](https://devel.data-in-motion.biz/jenkins/job/GH/job/org.gecko.jgit/)
 
 ## License check
 
