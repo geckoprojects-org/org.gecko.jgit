@@ -16,7 +16,7 @@ base-version: 1.0.0
 
 # Maven Central Group-Id
 # For Geckoprojects the groupid must start with org.geckoprojects
--groupid: org.geckoprojects.git
+-groupid: org.geckoprojects.jgit
 
 javac.source: 11
 javac.target: 11
