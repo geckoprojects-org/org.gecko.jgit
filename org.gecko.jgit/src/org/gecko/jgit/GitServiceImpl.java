@@ -13,11 +13,15 @@
  */
 package org.gecko.jgit;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +29,6 @@ import java.util.stream.Collectors;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryDescription;
 import org.eclipse.jgit.internal.storage.dfs.InMemoryRepository;
 import org.eclipse.jgit.lib.ObjectId;
@@ -44,6 +47,9 @@ import org.eclipse.jgit.transport.ssh.jsch.OpenSshConfig;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.FS;
+import org.gecko.jgit.api.GitConfig;
+import org.gecko.jgit.api.GitService;
+import org.gecko.jgit.api.TreeResult;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
@@ -52,8 +58,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-@Component(service = GitService.class, configurationPid = "GitConfig", configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
-public class GitService {
+@Component(configurationPid = "GitConfig", configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
+public class GitServiceImpl implements GitService{
 	private final class GitSshSessionFactory extends JschConfigSessionFactory {
 
 		@Override
@@ -108,25 +114,87 @@ public class GitService {
 	public void deactivate() {
 		repo.close();
 	}
-
-	public void loadFile(String file, OutputStream out) throws RevisionSyntaxException, IOException {
+	
+	@Override
+	public TreeResult getFiles() {
+		return getFiles(null);
+	}
+	
+	@Override
+	public TreeResult getFiles(String basepath)  {
 		String branch = config.branch();
-		ObjectId lastCommitId = repo.resolve("refs/heads/" + branch);
-		try (RevWalk revWalk = new RevWalk(repo); TreeWalk treeWalk = new TreeWalk(repo)) {
-			RevCommit commit = revWalk.parseCommit(lastCommitId);
-			RevTree tree = commit.getTree();
-			treeWalk.addTree(tree);
-			treeWalk.setRecursive(true);
-			treeWalk.setFilter(PathFilter.create(file));
-			if (!treeWalk.next()) {
-				return;
+		ObjectId lastCommitId;
+		try {
+			lastCommitId = repo.resolve("refs/heads/" + branch);
+			try (RevWalk revWalk = new RevWalk(repo); TreeWalk treeWalk = new TreeWalk(repo)) {
+				RevCommit commit = revWalk.parseCommit(lastCommitId);
+				RevTree tree = commit.getTree();
+				treeWalk.addTree(tree);
+				treeWalk.setRecursive(true);
+				if(basepath != null) {
+					treeWalk.setFilter(PathFilter.create(basepath));
+				}
+				List<String> files = new ArrayList<>();
+				while(treeWalk.next()) {
+					files.add(treeWalk.getPathString());
+				}
+				return new TreeResult(ObjectId.toString(lastCommitId), files);
 			}
-			ObjectId objectId = treeWalk.getObjectId(0);
-			ObjectLoader loader = repo.open(objectId);
-			loader.copyTo(out);
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to list files for basepath " + basepath, e);
 		}
 	}
 
+	@Override
+	public void loadLatestFile(String file, OutputStream out) {
+		loadFile(null, file, out);
+	}
+
+	@Override
+	public InputStream readLatestFile(String file) {
+		return readFile(null, file); 
+	}
+
+	@Override
+	public InputStream readFile(String commitId, String file) {
+		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+			loadFile(commitId, file, byteArrayOutputStream);
+			ByteArrayInputStream bais = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+			return bais;
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to load file " + file, e);
+		} 
+	}
+
+	@Override
+	public void loadFile(String commitId, String file, OutputStream out) {
+		String branch = config.branch();
+		ObjectId theCommitId;
+		try {
+			if(commitId == null) {
+				theCommitId = repo.resolve("refs/heads/" + branch);
+			} else {
+				theCommitId = ObjectId.fromString(commitId);
+			}
+			try (RevWalk revWalk = new RevWalk(repo); TreeWalk treeWalk = new TreeWalk(repo)) {
+				RevCommit commit = revWalk.parseCommit(theCommitId);
+				RevTree tree = commit.getTree();
+				treeWalk.addTree(tree);
+				treeWalk.setRecursive(true);
+				treeWalk.setFilter(PathFilter.create(file));
+				if (!treeWalk.next()) {
+					return;
+				}
+				ObjectId objectId = treeWalk.getObjectId(0);
+				ObjectLoader loader = repo.open(objectId);
+				loader.copyTo(out);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to load file " + file, e);
+		} 
+	}
+	
+	@Override
 	public List<String> getBranches() {
 		try {
 			List<Ref> branches = git.branchList().call();
@@ -137,6 +205,7 @@ public class GitService {
 		}
 	}
 
+	@Override
 	public Iterable<RevCommit> getLog() throws GitAPIException {
 		return git.log().call();
 

@@ -11,14 +11,26 @@
  * Contributors:
  *     Data In Motion - initial API and implementation
  */
-package org.gecko.jgit;
+package org.gecko.jgit.api;
 
-@interface GitConfig {
-	String repo();
+import java.util.List;
 
-	String branch() default "main";
+public class TreeResult {
 
-	String privateKey();
+	private String commitId;
+	private List<String> files;
+	
+	public TreeResult(String commitId, List<String> files) {
+		this.commitId = commitId;
+		this.files = files;
+	}
 
-	String privateKeyPassphrase();
+	public String getCommitId() {
+		return commitId;
+	}
+
+	public List<String> getFiles() {
+		return files;
+	}
+	
 }

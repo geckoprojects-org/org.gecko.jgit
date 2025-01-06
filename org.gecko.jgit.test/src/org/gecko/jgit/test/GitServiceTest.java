@@ -24,7 +24,8 @@ import java.util.List;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.gecko.jgit.GitService;
+import org.gecko.jgit.api.GitService;
+import org.gecko.jgit.api.TreeResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,17 +49,21 @@ public class GitServiceTest {
 
 	/** FOO_BAR */
 	private static final String FILE_CONTENT = "fooBar";
+	private GitRepositoryService repo;
 
 	@BeforeEach
 	public void before(@InjectService(cardinality = 0) ServiceAware<GitRepositoryService> repoAware)
 			throws InterruptedException, GitAPIException, IOException {
-		GitRepositoryService repo = repoAware.waitForService(5000);
+		repo = repoAware.waitForService(5000);
 		assertThat(repo).isNotNull();
 		Files.writeString(Paths.get("testRepo/test"), FILE_CONTENT);
 		repo.addFilePattern("test");
 		repo.commit("Hans Wurst", "hw@example.com", "add test");
 	}
 
+	
+
+	
 	@Test
 	@WithFactoryConfiguration(factoryPid = "GitConfig", location = "?", name = "git", properties = {
 			@Property(key = "repo", value = "testRepo"), //
@@ -88,9 +93,30 @@ public class GitServiceTest {
 		assertThat(branches).hasSize(1);
 
 		ByteArrayOutputStream o = new ByteArrayOutputStream();
-		service.loadFile("test", o);
+		service.loadLatestFile("test", o);
 		String content = new String(o.toByteArray());
 		assertThat(content).isEqualTo(FILE_CONTENT);
+	}
+
+	@Test
+	@WithFactoryConfiguration(factoryPid = "GitConfig", location = "?", name = "git", properties = {
+			@Property(key = "repo", value = "testRepo"), //
+			@Property(key = "branch", value = "main") })
+	public void testFiles(@InjectService(cardinality = 0) ServiceAware<GitService> gsAware)
+			throws InterruptedException, IOException, GitAPIException {
+		GitService service = gsAware.waitForService(5000l);
+		List<String> branches = service.getBranches();
+		assertThat(branches).hasSize(1);
+		
+		TreeResult result = service.getFiles();
+		assertThat(result.getFiles()).hasSize(1);
+		
+		Files.writeString(Paths.get("testRepo/test2"), FILE_CONTENT);
+		repo.addFilePattern("test2");
+		repo.commit("Hans Wurst", "hw@example.com", "add test2");
+		
+		result = service.getFiles();
+		assertThat(result.getFiles()).hasSize(2);
 	}
 
 }
