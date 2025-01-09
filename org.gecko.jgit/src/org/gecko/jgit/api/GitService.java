@@ -44,4 +44,6 @@ public interface GitService {
 
 	String getGitUrl();
 
+	void fetch();
+
 }

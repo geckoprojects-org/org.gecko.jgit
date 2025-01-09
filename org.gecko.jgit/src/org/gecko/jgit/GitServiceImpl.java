@@ -80,6 +80,7 @@ public class GitServiceImpl implements GitService{
 	private GitConfig config;
 	private Repository repo;
 	private Git git;
+	private FetchCommand fetchCmd;
 
 	@Activate
 	public void activate(GitConfig config) throws IOException, GitAPIException {
@@ -91,12 +92,6 @@ public class GitServiceImpl implements GitService{
 					.setInitialBranch(config.branch()).setRepositoryDescription(repoDesc) //
 					.setFS(FS.detect()).build();
 			git = new Git(repo);
-			SshSessionFactory sshSessionFactory = new GitSshSessionFactory();
-			FetchCommand fetchCmd = git.fetch();
-			fetchCmd.setRemote(config.repo());
-			fetchCmd.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*"));
-			fetchCmd.setTransportConfigCallback(t -> ((SshTransport) t).setSshSessionFactory(sshSessionFactory));
-			fetchCmd.call();
 		} else {
 			FileRepositoryBuilder builder = new FileRepositoryBuilder();
 			File gitDir = new File(config.repo());
@@ -106,17 +101,32 @@ public class GitServiceImpl implements GitService{
 			logger.log(Level.INFO, "repo dir {0}", repo.getDirectory());
 			git = new Git(repo);
 		}
+		SshSessionFactory sshSessionFactory = new GitSshSessionFactory();
+		fetchCmd = git.fetch();
+		fetchCmd.setRemote(config.repo());
+		fetchCmd.setRefSpecs(new RefSpec("+refs/heads/*:refs/heads/*"));
+		fetchCmd.setTransportConfigCallback(t -> ((SshTransport) t).setSshSessionFactory(sshSessionFactory));
+		fetchCmd.call();
 		repo.getObjectDatabase();
 	}
 
 	@Override
 	public String getBranch() {
-		return config.branch();
+		return "refs/heads/" + config.branch();
 	}
 	
 	@Override
 	public String getGitUrl() {
 		return config.repo();
+	}
+	
+	@Override
+	public void fetch() {
+		try {
+			fetchCmd.call();
+		} catch (Exception e) {
+			throw new RuntimeException("Fetch failed for " + config.repo(), e);
+		}
 	}
 	
 	private boolean isRemote(String repo) {
