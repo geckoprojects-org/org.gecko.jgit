@@ -40,4 +40,8 @@ public interface GitService {
 
 	InputStream readFile(String commitId, String file);
 
+	String getBranch();
+
+	String getGitUrl();
+
 }

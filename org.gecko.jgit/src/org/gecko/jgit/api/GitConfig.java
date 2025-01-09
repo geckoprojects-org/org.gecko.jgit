@@ -13,6 +13,9 @@
  */
 package org.gecko.jgit.api;
 
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+
+@ObjectClassDefinition
 public @interface GitConfig {
 	String repo();
 

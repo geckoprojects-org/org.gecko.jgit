@@ -53,12 +53,14 @@ import org.gecko.jgit.api.TreeResult;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.metatype.annotations.Designate;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 @Component(configurationPid = "GitConfig", configurationPolicy = ConfigurationPolicy.REQUIRE, immediate = true)
+@Designate(ocd = GitConfig.class, factory = true)
 public class GitServiceImpl implements GitService{
 	private final class GitSshSessionFactory extends JschConfigSessionFactory {
 
@@ -107,6 +109,16 @@ public class GitServiceImpl implements GitService{
 		repo.getObjectDatabase();
 	}
 
+	@Override
+	public String getBranch() {
+		return config.branch();
+	}
+	
+	@Override
+	public String getGitUrl() {
+		return config.repo();
+	}
+	
 	private boolean isRemote(String repo) {
 		return repo.startsWith("git") || repo.startsWith("https");
 	}
