@@ -112,6 +112,11 @@ public class GitServiceImpl implements GitService{
 
 	@Override
 	public String getBranch() {
+		return config.branch();
+	}
+
+	@Override
+	public String getRef() {
 		return "refs/heads/" + config.branch();
 	}
 	

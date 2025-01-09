@@ -46,4 +46,9 @@ public interface GitService {
 
 	void fetch();
 
+	/**
+	 * @return
+	 */
+	String getRef();
+
 }
