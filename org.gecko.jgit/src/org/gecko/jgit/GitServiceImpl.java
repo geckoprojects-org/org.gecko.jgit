@@ -71,7 +71,9 @@ public class GitServiceImpl implements GitService{
 		@Override
 		protected JSch createDefaultJSch(FS fs) throws JSchException {
 			JSch defaultJSch = super.createDefaultJSch(fs);
-			defaultJSch.addIdentity(config.privateKey(), config.privateKeyPassphrase());
+			if(config.privateKey() != null ) {
+				defaultJSch.addIdentity(config.privateKey(), config.privateKeyPassphrase());
+			}
 			return defaultJSch;
 		}
 	}
