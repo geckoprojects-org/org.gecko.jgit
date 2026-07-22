@@ -6,6 +6,7 @@
     "repo": "git@github.com:de-jena/upd-models.git",
     "branch": "main",
     "privateKey": "$[env:SSH_PRIVATE_KEY;default=$[prop:SSH_PRIVATE_KEY;default=]]",
-    "privateKeyPassphrase":"$[env:SSH_PRIVATE_KEY_PWD;default=$[prop:SSH_PRIVATE_KEY_PWD;default=]]"
+    "privateKeyPassphrase":"$[env:SSH_PRIVATE_KEY_PWD;default=$[prop:SSH_PRIVATE_KEY_PWD;default=]]",
+    "knownHosts":"$[env:SSH_KNOWN_HOSTS;default=$[prop:SSH_KNOWN_HOSTS;default=]]"
 	}
 }
