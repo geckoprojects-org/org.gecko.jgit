@@ -9,6 +9,16 @@
 
 -runee: JavaSE-17
 
+# org.eclipse.jgit.ssh.apache references javax.security.auth.* (e.g. DestroyFailedException
+# when wiping key material) without an Import-Package, expecting it on the boot classpath.
+# Felix boot-delegates only java.* by default, so javax.* must be added to bootdelegation.
+# The enableOSGi-Test library already sets bootdelegation (to a mockito package) through this
+# test-runproperties macro; bootdelegation is a single property, so a separate -runproperties
+# entry can't add to it. Override the macro to carry BOTH values (mockito's, verbatim, + javax.*).
+test-runproperties: \
+	tester.trace=true,\
+	org.osgi.framework.bootdelegation='org.mockito.internal.creation.bytebuddy.inject,javax.*'
+
 -runbundles: \
 	assertj-core;version='[3.26.3,3.26.4)',\
 	com.googlecode.javaewah.JavaEWAH;version='[1.1.12,1.1.13)',\
@@ -19,9 +29,13 @@
 	org.apache.commons.commons-codec;version='[1.17.1,1.17.2)',\
 	org.apache.felix.configadmin;version='[1.9.26,1.9.27)',\
 	org.apache.felix.scr;version='[2.2.12,2.2.13)',\
-	org.apache.servicemix.bundles.jsch;version='[0.1.55,0.1.56)',\
-	org.eclipse.jgit;version='[7.1.0,7.1.1)',\
-	org.eclipse.jgit.ssh.jsch;version='[7.1.0,7.1.1)',\
+	org.apache.sshd.osgi;version='[2.17.1,2.17.2)',\
+	org.apache.sshd.sftp;version='[2.17.1,2.17.2)',\
+	bcprov;version='[1.84,1.85)',\
+	bcpkix;version='[1.84,1.85)',\
+	bcutil;version='[1.84,1.85)',\
+	org.eclipse.jgit;version='[7.7.0,7.7.1)',\
+	org.eclipse.jgit.ssh.apache;version='[7.7.0,7.7.1)',\
 	org.opentest4j;version='[1.3.0,1.3.1)',\
 	org.osgi.service.cm;version='[1.6.1,1.6.2)',\
 	org.osgi.service.component;version='[1.5.1,1.5.2)',\

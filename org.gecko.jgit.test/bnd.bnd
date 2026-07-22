@@ -8,8 +8,12 @@ Test-Cases: ${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.
 	org.osgi.service.cm,\
 	org.osgi.test.junit5.cm,\
 	org.gecko.jgit;version=snapshot,\
-	org.eclipse.jgit
-	
+	org.eclipse.jgit,\
+	org.apache.sshd.osgi
+
+# Throwaway SSH keys used by GitSshTransportTest, embedded so they can be read at runtime.
+-includeresource: testkeys=testkeys
+
 Private-Package: org.gecko.jgit.test
 
 Bundle-Version: 1.0.0.SNAPSHOT

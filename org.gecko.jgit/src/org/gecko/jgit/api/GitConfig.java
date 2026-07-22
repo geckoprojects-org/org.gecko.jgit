@@ -24,4 +24,11 @@ public @interface GitConfig {
 	String privateKey();
 
 	String privateKeyPassphrase();
+
+	/**
+	 * Path to an OpenSSH {@code known_hosts} file used to verify the SSH server's
+	 * host key. When empty, the Apache MINA sshd backend falls back to its default
+	 * location ({@code ~/.ssh/known_hosts}). Only relevant for SSH remotes.
+	 */
+	String knownHosts() default "";
 }
