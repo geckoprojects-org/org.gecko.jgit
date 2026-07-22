@@ -3,15 +3,14 @@
 #	DIMC Github-Configuration - gecko-dimc
 #	Jacoco Support - gecko-jacoco
 -library: \
-	fennec,\
+	geckoDIMC,\
 	fennecTest,\
 	fennecEMF
 
 # Needed because we enabled library 'gecko-dimc'
 # Activate baselining
-github-orga: geckoprojects
-fennec-baselining: false
-maven-central: true
+dimcBaselining: true
+mavenCentral: true
 github-project: org.gecko.jgit
 base-version: 1.0.0
 
