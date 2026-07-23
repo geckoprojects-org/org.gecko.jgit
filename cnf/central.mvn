@@ -123,6 +123,6 @@ org.bouncycastle:bcprov-jdk18on:1.84
 org.bouncycastle:bcpkix-jdk18on:1.84
 org.bouncycastle:bcutil-jdk18on:1.84
 
-org.geckoprojects.bnd:org.gecko.bnd.dimc.library:1.6.0
+org.geckoprojects.bnd:org.gecko.bnd.dimc.library:2.2.0
 
 

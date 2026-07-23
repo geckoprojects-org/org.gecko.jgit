@@ -34,17 +34,6 @@ javac.target: 11
         poll.time=-1; \
         name="Central"
         
-# Overrides the geckoDIMC library's Sonatype release repo (releng/central.bnd),
-# which still points at oss.sonatype.org — decommissioned June 30, 2025.
-# Snapshots go to the Central Portal; releases via the OSSRH-compatible staging API.
--plugin.sonatype: \
-	aQute.bnd.repository.maven.provider.MavenBndRepository;\
-		snapshotUrl		= https://central.sonatype.com/repository/maven-snapshots/;\
-		releaseUrl		= https://repo1.maven.org/maven2/;\
-		stagingUrl		= https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/;\
-		index			= ${.}/sonatype.maven;\
-		name			= 'Sonatype'
-
 -plugin.0.Local: \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
 		name = Local; \
